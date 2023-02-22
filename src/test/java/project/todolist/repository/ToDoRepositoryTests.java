@@ -50,7 +50,6 @@ public class ToDoRepositoryTests {
 
         List<ToDo> expected = List.of(toDo1, toDo2);
         List<ToDo> actual = toDoRepository.getToDosByUserId(user.getId());
-
         assertEquals(expected.size(), actual.size());
     }
 

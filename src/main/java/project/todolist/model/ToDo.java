@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import javax.persistence.*;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -24,7 +25,7 @@ public class ToDo {
     @Size(min = 1, max = 255, message = "ToDo's title must be between 1 and 255 characters")
     private String title;
 
-    @Column(name = "description")
+    @Column(name = "description", nullable = false)
     @Size(max = 255, message = "ToDo's description must be lesser than 255 characters")
     private String description;
 
@@ -32,20 +33,22 @@ public class ToDo {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private User owner;
 
     @OneToMany(mappedBy = "toDo", cascade = CascadeType.REMOVE)
     @Setter(AccessLevel.PRIVATE)
     @ToString.Exclude
-    private List<Task> tasks;
+    private List<Task> tasks = new ArrayList<>();
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "todos_collaborators",
             joinColumns = @JoinColumn(name = "todo_id"),
             inverseJoinColumns = @JoinColumn(name = "collaborator_id"))
-    private List<User> collaborators;
+    @Setter(AccessLevel.PRIVATE)
+    @ToString.Exclude
+    private List<User> collaborators = new ArrayList<>();
 
     public void addCollaborator(User collaborator) {
         collaborators.add(collaborator);

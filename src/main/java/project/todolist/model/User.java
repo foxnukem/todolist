@@ -6,6 +6,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -47,17 +48,17 @@ public class User {
     @Column(name = "sex", nullable = false)
     private Sex sex;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     private Role role;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.REMOVE)
     @Setter(AccessLevel.PRIVATE)
     @ToString.Exclude
-    private List<ToDo> myToDos;
+    private List<ToDo> myToDos = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "collaborators")
+    @ManyToMany(mappedBy = "collaborators", fetch = FetchType.LAZY)
     @Setter(AccessLevel.PRIVATE)
     @ToString.Exclude
-    private List<ToDo> collaborations;
+    private List<ToDo> collaborations = new ArrayList<>();
 }

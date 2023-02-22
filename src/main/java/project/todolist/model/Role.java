@@ -22,7 +22,7 @@ public class Role {
     @Size(min = 1, max = 255, message = "Role's name must be between 1 and 255 characters")
     private String name;
 
-    @OneToMany(mappedBy = "role")
+    @OneToMany(mappedBy = "role", cascade = CascadeType.REMOVE)
     @Setter(AccessLevel.PRIVATE)
     @ToString.Exclude
     private List<User> users;

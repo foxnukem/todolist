@@ -35,5 +35,6 @@ public class Task {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "todo_id")
+    @ToString.Exclude
     private ToDo toDo;
 }
