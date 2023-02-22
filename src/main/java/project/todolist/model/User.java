@@ -3,35 +3,48 @@ package project.todolist.model;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.util.List;
 
+@Entity
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(of = "id")
 @ToString
-@Entity
-@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Setter(AccessLevel.NONE)
     private long id;
 
+    @Pattern(regexp = "[A-Z][a-z]+",
+            message = "Must start with a capital letter followed by one or more lowercase letters")
     @Column(name = "first_name", nullable = false)
-    private String firstname;
+    @Size(min = 2, max = 255, message = "First name must be between 2 and 255 characters")
+    private String firstName;
 
+    @Pattern(regexp = "[A-Z][a-z]+",
+            message = "Must start with a capital letter followed by one or more lowercase letters")
     @Column(name = "last_name")
-    private String lastname;
+    @Size(min = 2, max = 255, message = "Last name must be between 2 and 255 characters")
+    private String lastName;
 
+    @Email
     @Column(name = "email", nullable = false, unique = true)
+    @Size(min = 5, max = 255, message = "Email must be between 5 and 255 characters")
     private String email;
 
+    @Pattern(regexp = "(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{6,}",
+            message = "Must be minimum 6 characters, at least one letter and one number")
     @Column(name = "password", nullable = false)
+    @Size(min = 6, max = 255, message = "Password must be between 6 and 255 characters")
     private String password;
 
-    @Column(name = "sex", nullable = false)
     @Enumerated(EnumType.STRING)
+    @Column(name = "sex", nullable = false)
     private Sex sex;
 
     @ManyToOne
@@ -39,13 +52,12 @@ public class User {
     private Role role;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.REMOVE)
+    @Setter(AccessLevel.PRIVATE)
     @ToString.Exclude
     private List<ToDo> myToDos;
 
-    @ManyToMany
-    @JoinTable(name = "todo_collaborator",
-            joinColumns = @JoinColumn(name = "collaborator_id"),
-            inverseJoinColumns = @JoinColumn(name = "todo_id"))
+    @ManyToMany(mappedBy = "collaborators")
+    @Setter(AccessLevel.PRIVATE)
     @ToString.Exclude
     private List<ToDo> collaborations;
 }
