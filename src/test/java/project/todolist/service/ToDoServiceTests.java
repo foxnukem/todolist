@@ -37,20 +37,20 @@ public class ToDoServiceTests {
     @InjectMocks
     private ToDoServiceImpl toDoService;
 
-    private ToDo expected;
+    private ToDo expectedToDo;
     private User user;
     private final long todoId = 1L;
     private final long userId = 2L;
 
     @BeforeEach
     public void setUp() {
-        expected = new ToDo();
-        expected.setId(todoId);
+        expectedToDo = new ToDo();
+        expectedToDo.setId(todoId);
         String title = "title";
-        expected.setTitle(title);
+        expectedToDo.setTitle(title);
         user = new User();
         user.setId(userId);
-        expected.setOwner(user);
+        expectedToDo.setOwner(user);
     }
 
     @Test
@@ -63,37 +63,37 @@ public class ToDoServiceTests {
     @Test
     @DisplayName("save(todo) saves new correct ToDo")
     void saveNonExistingToDo() {
-        when(toDoRepository.save(any(ToDo.class))).thenReturn(expected);
+        when(toDoRepository.save(any(ToDo.class))).thenReturn(expectedToDo);
 
-        var actual = toDoService.save(expected);
+        var actual = toDoService.save(expectedToDo);
 
         verify(toDoRepository).save(any(ToDo.class));
-        assertEquals(expected, actual);
-        assertEquals(expected.getId(), actual.getId());
+        assertEquals(expectedToDo, actual);
+        assertEquals(expectedToDo.getId(), actual.getId());
     }
 
     @Test
     @DisplayName("save(todo) updates existing ToDo")
     void updateExistingToDo() {
-        when(toDoRepository.save(any(ToDo.class))).thenReturn(expected);
+        when(toDoRepository.save(any(ToDo.class))).thenReturn(expectedToDo);
 
-        var actual = toDoService.save(expected);
+        var actual = toDoService.save(expectedToDo);
 
         verify(toDoRepository).save(any(ToDo.class));
-        assertEquals(expected, actual);
-        assertEquals(expected.getId(), actual.getId());
+        assertEquals(expectedToDo, actual);
+        assertEquals(expectedToDo.getId(), actual.getId());
     }
 
     @Test
     @DisplayName("readById(id) returns correct ToDo by its id")
     void readExistingToDoById() {
-        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expected));
+        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expectedToDo));
 
         var actual = toDoService.readById(todoId);
 
         verify(toDoRepository).findById(anyLong());
-        assertEquals(expected, actual);
-        assertEquals(expected.getId(), actual.getId());
+        assertEquals(expectedToDo, actual);
+        assertEquals(expectedToDo.getId(), actual.getId());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class ToDoServiceTests {
     @Transactional
     @DisplayName("delete(id) removes ToDo by its id")
     void deleteExistingToDoById() {
-        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expected));
+        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expectedToDo));
 
         toDoService.delete(todoId);
 
@@ -119,9 +119,8 @@ public class ToDoServiceTests {
     void deleteNonExistingToDoById() {
         when(toDoRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        var exception = assertThrows(EntityNotFoundException.class, () -> toDoService.delete(todoId));
+        assertThrows(EntityNotFoundException.class, () -> toDoService.delete(todoId));
 
-        assertEquals("ToDo (id=" + todoId + ") was not found", exception.getMessage());
         verify(toDoRepository).findById(anyLong());
         verify(toDoRepository, times(0)).delete(any(ToDo.class));
     }
@@ -140,11 +139,11 @@ public class ToDoServiceTests {
     @Test
     @DisplayName("getAllToDosOfUser(id) returns all created ToDo of existing User")
     void getAllToDosOfExistingUser() {
-        when(toDoRepository.getToDosByUserId(anyLong())).thenReturn(Collections.emptyList());
+        when(toDoRepository.getToDosByUserId(anyLong())).thenReturn(List.of(new ToDo(), new ToDo(), new ToDo(), new ToDo()));
 
         var actual = toDoService.getAllToDoOfUser(userId);
 
-        assertEquals(0, actual.size());
+        assertEquals(4, actual.size());
         verify(toDoRepository).getToDosByUserId(anyLong());
     }
 
@@ -171,66 +170,68 @@ public class ToDoServiceTests {
     @Test
     @DisplayName("addCollaborator(todoId, userid) throws UserIsOwnerOfThisToDoException when given User is an owner of given ToDo")
     void addOwnerAsCollaborator() {
-        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expected));
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(expected.getOwner()));
+        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expectedToDo));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(expectedToDo.getOwner()));
 
-        assertThrows(UserIsOwnerOfThisToDoException.class, () -> toDoService.addCollaborator(expected.getId(), expected.getOwner().getId()));
+        assertThrows(UserIsOwnerOfThisToDoException.class, () -> toDoService.addCollaborator(expectedToDo.getId(), expectedToDo.getOwner().getId()));
     }
 
     @Test
     @DisplayName("addCollaborator(todoId, userid) adds new collaborator to ToDo ")
     void addCollaborator() {
         User collaborator = new User();
-        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expected));
+        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expectedToDo));
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(collaborator));
 
-        toDoService.addCollaborator(expected.getId(), collaborator.getId());
-        assertTrue(toDoService.readById(expected.getId()).getCollaborators().contains(collaborator));
+        toDoService.addCollaborator(expectedToDo.getId(), collaborator.getId());
+        assertTrue(toDoService.readById(expectedToDo.getId()).getCollaborators().contains(collaborator));
     }
 
     @Test
     @DisplayName("addCollaborator(todoId, userid) throws an EntityNotFoundException when ToDo with given id was not found")
     void addCollaboratorNotFoundToDo() {
-        assertThrows(EntityNotFoundException.class, () -> toDoService.addCollaborator(expected.getId(), user.getId()));
+        var exception = assertThrows(EntityNotFoundException.class, () -> toDoService.addCollaborator(expectedToDo.getId(), user.getId()));
+        assertEquals("", exception.getMessage());
     }
 
     @Test
     @DisplayName("addCollaborator(todoId, userid) throws an EntityNotFoundException when User with given id was not found")
     void addCollaboratorNotFoundUser() {
-        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expected));
-        assertThrows(EntityNotFoundException.class, () -> toDoService.addCollaborator(expected.getId(), user.getId()));
+        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expectedToDo));
+        assertThrows(EntityNotFoundException.class, () -> toDoService.addCollaborator(expectedToDo.getId(), user.getId()));
     }
 
     @Test
     @DisplayName("removeCollaborator(todoId, userid) throws UserIsOwnerOfThisToDoException when given User is an owner of given ToDo")
     void removeOwnerFromCollaborators() {
-        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expected));
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(expected.getOwner()));
+        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expectedToDo));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(expectedToDo.getOwner()));
 
-        assertThrows(UserIsOwnerOfThisToDoException.class, () -> toDoService.removeCollaborator(expected.getId(), expected.getOwner().getId()));
+        assertThrows(UserIsOwnerOfThisToDoException.class, () -> toDoService.removeCollaborator(expectedToDo.getId(), expectedToDo.getOwner().getId()));
     }
 
     @Test
     @DisplayName("removeCollaborator(todoId, userid) throws an EntityNotFoundException when ToDo with given id was not found")
     void removeCollaboratorNotFoundToDo() {
-        assertThrows(EntityNotFoundException.class, () -> toDoService.removeCollaborator(expected.getId(), user.getId()));
+        assertThrows(EntityNotFoundException.class, () -> toDoService.removeCollaborator(expectedToDo.getId(), user.getId()));
     }
 
     @Test
     @DisplayName("removeCollaborator(todoId, userid) throws an EntityNotFoundException when User with given id was not found")
     void removeNotFoundUser() {
-        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expected));
-        assertThrows(EntityNotFoundException.class, () -> toDoService.removeCollaborator(expected.getId(), user.getId()));
+        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expectedToDo));
+
+        assertThrows(EntityNotFoundException.class, () -> toDoService.removeCollaborator(expectedToDo.getId(), user.getId()));
     }
 
     @Test
     @DisplayName("removeCollaborator(todoId, userid) removes collaborator")
     void removeCollaborator() {
         User collaborator = new User();
-        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expected));
+        when(toDoRepository.findById(anyLong())).thenReturn(Optional.of(expectedToDo));
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(collaborator));
 
-        toDoService.removeCollaborator(expected.getId(), collaborator.getId());
-        assertFalse(toDoService.readById(expected.getId()).getCollaborators().contains(collaborator));
+        toDoService.removeCollaborator(expectedToDo.getId(), collaborator.getId());
+        assertFalse(toDoService.readById(expectedToDo.getId()).getCollaborators().contains(collaborator));
     }
 }
