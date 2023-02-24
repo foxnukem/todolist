@@ -23,8 +23,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class TaskServiceTests {
@@ -60,6 +59,7 @@ public class TaskServiceTests {
     @DisplayName("save(task) should throw NullReferenceEntityException when passing null")
     void saveNull() {
         assertThrows(NullReferenceEntityException.class, () -> taskService.save(null));
+        verify(taskRepository, times(0)).save(any(Task.class));
     }
 
     @Test
@@ -117,6 +117,7 @@ public class TaskServiceTests {
     @DisplayName("delete(id) throws an EntityNotFoundException when Task with given id was not found")
     void deleteNonExisting() {
         assertThrows(EntityNotFoundException.class, () -> taskService.delete(1L));
+        verify(taskRepository, times(0)).delete(any(Task.class));
     }
 
     @Test
@@ -149,6 +150,7 @@ public class TaskServiceTests {
     @DisplayName("createNewState(state) throws NullReferenceEntityException when passing null")
     void createNullState() {
         assertThrows(NullReferenceEntityException.class, () -> taskService.createState(null));
+        verify(stateRepository, times(0)).save(any(State.class));
     }
 
     @Test
@@ -199,12 +201,15 @@ public class TaskServiceTests {
     @DisplayName("deleteStateByName(name) throws EntityNotFoundException when State with that name was not found")
     void deleteNonExistingStateByName() {
         assertThrows(EntityNotFoundException.class, () -> taskService.deleteStateByName(expectedState.getName()));
+        verify(stateRepository, times(0)).delete(any(State.class));
     }
 
     @Test
-    @DisplayName("deleteStateByName(name) throws IllegalArgumentException when passing null")
-    void deleteStateByNullName() {
+    @DisplayName("deleteStateByName(name) throws IllegalArgumentException when passing null or empty string")
+    void deleteStateByNullOrBlankName() {
         assertThrows(IllegalArgumentException.class, () -> taskService.deleteStateByName(null));
+        assertThrows(IllegalArgumentException.class, () -> taskService.deleteStateByName(""));
+        verify(stateRepository, times(0)).delete(any(State.class));
     }
 
     @Test

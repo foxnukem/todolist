@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.transaction.annotation.Transactional;
 import project.todolist.model.ToDo;
 import project.todolist.model.User;
 
@@ -29,7 +28,6 @@ public class ToDoRepositoryTests {
     private TestEntityManager entityManager;
 
     @Test
-    @Transactional
     @DisplayName("getToDosByUserId(id) fetches a non empty list with ToDo by owner id")
     public void getToDosByUserIdFound() {
         ToDo toDo1 = new ToDo();

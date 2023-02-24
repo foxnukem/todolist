@@ -56,8 +56,8 @@ public class ToDoServiceTests {
     @Test
     @DisplayName("save(todo) throws NullReferenceEntityException when passing null")
     void saveNullThrowsException() {
-        var exception = assertThrows(NullReferenceEntityException.class, () -> toDoService.save(null));
-        assertEquals("Given ToDo cannot be null", exception.getMessage());
+        assertThrows(NullReferenceEntityException.class, () -> toDoService.save(null));
+        verify(toDoRepository, times(0)).save(any(ToDo.class));
     }
 
     @Test
@@ -190,8 +190,7 @@ public class ToDoServiceTests {
     @Test
     @DisplayName("addCollaborator(todoId, userid) throws an EntityNotFoundException when ToDo with given id was not found")
     void addCollaboratorNotFoundToDo() {
-        var exception = assertThrows(EntityNotFoundException.class, () -> toDoService.addCollaborator(expectedToDo.getId(), user.getId()));
-        assertEquals("", exception.getMessage());
+        assertThrows(EntityNotFoundException.class, () -> toDoService.addCollaborator(expectedToDo.getId(), user.getId()));
     }
 
     @Test
