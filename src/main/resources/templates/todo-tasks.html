@@ -11,6 +11,9 @@
     <h2 th:text="${'All Tasks From ' + todo.title}"></h2>
 
     <form class="form-horizontal" th:action="@{|/tasks/create/todos/${todo.id}|}" method="get">
+        <div class="form-group">
+            <textarea class="form-control" disabled th:field="*{todo.description}" id="description"></textarea>
+        </div>
         <div align="right">
             <input class="btn-info btn-lg" type="submit" value="Create Task">
         </div>
@@ -31,11 +34,11 @@
         <tr th:each="task, iStat: ${tasks}">
             <td th:text="${iStat.index + 1}"/>
             <td th:text="${task.id}"/>
-            <td th:text="${task.name}"/>
+            <td th:text="${task.name}" th:href="@{|/tasks/${task.id}/read|}"/>
             <td th:text="${task.priority.name().substring(0, 1) + task.priority.name().substring(1).toLowerCase()}"/>
             <td th:text="${task.state.name}"/>
             <td>
-                <a th:href="@{|/tasks/${task.id}/update/todos/${todo.id}|}">Edit</a>
+                <a th:href="@{|/tasks/${task.id}/update/|}">Edit</a>
             </td>
             <td>
                 <a th:href="@{|/tasks/${task.id}/delete/todos/${todo.id}|}">Remove</a>

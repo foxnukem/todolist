@@ -29,7 +29,7 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private Priority priority;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "state_id")
     private State state;
 

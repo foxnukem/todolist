@@ -46,7 +46,6 @@ public class ToDo {
     @JoinTable(name = "todos_collaborators",
             joinColumns = @JoinColumn(name = "todo_id"),
             inverseJoinColumns = @JoinColumn(name = "collaborator_id"))
-    @Setter(AccessLevel.PRIVATE)
     @ToString.Exclude
     private List<User> collaborators = new ArrayList<>();
 

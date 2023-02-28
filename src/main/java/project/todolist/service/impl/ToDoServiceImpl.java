@@ -33,8 +33,8 @@ public class ToDoServiceImpl implements ToDoService {
     @Override
     public ToDo readById(long id) {
         return toDoRepository.findById(id).orElseThrow(() -> {
-            log.error("ToDoServiceImpl#readById: ToDo (id=" + id + ") was not found");
-            throw new EntityNotFoundException("ToDo (id=" + id + ") was not found");
+            log.error("ToDoServiceImpl#readById: ToDo (id=%d) was not found".formatted(id));
+            throw new EntityNotFoundException("ToDo (id=%d) was not found".formatted(id));
         });
     }
 
@@ -46,8 +46,8 @@ public class ToDoServiceImpl implements ToDoService {
                             toDoRepository.delete(toDo);
                         },
                         () -> {
-                            log.error("ToDoServiceImpl#delete: ToDo (id=" + id + ") was not found");
-                            throw new EntityNotFoundException("ToDo (id=" + id + ") was not found");
+                            log.error("ToDoServiceImpl#delete: ToDo (id=%d) was not found".formatted(id));
+                            throw new EntityNotFoundException("ToDo (id=%d) was not found".formatted(id));
                         });
     }
 
@@ -66,7 +66,8 @@ public class ToDoServiceImpl implements ToDoService {
         ToDo toDo = this.readById(toDoId);
         User user = getUserByIdAndCheckIsItOwnerOfToDo(toDo, collaboratorId);
         toDo.addCollaborator(user);
-        log.info("ToDoServiceImpl#addCollaborator: Added User (id=" + collaboratorId + ") as collaborator to ToDo (id=" + toDo + ")");
+        toDoRepository.save(toDo);
+        log.info("ToDoServiceImpl#addCollaborator: Added User (id=%d) as collaborator to ToDo (id=%s)".formatted(collaboratorId, toDo));
     }
 
     @Override
@@ -74,13 +75,14 @@ public class ToDoServiceImpl implements ToDoService {
         ToDo toDo = this.readById(toDoId);
         User user = getUserByIdAndCheckIsItOwnerOfToDo(toDo, collaboratorId);
         toDo.removeCollaborator(user);
-        log.info("ToDoServiceImpl#removeCollaborator: Removed User (id=" + collaboratorId + ") as collaborator from ToDo (id=" + toDo + ")");
+        toDoRepository.save(toDo);
+        log.info("ToDoServiceImpl#removeCollaborator: Removed User (id=%d) from collaborators of ToDo (id=%s)".formatted(collaboratorId, toDo));
     }
 
     private User getUserByIdAndCheckIsItOwnerOfToDo(ToDo toDo, long collaboratorId) {
         User user = userRepository.findById(collaboratorId).orElseThrow(() -> {
-            log.error("ToDoServiceImpl#getUserByIdAndCheckIsItOwnerOfToDo: User (id=" + collaboratorId + ") was not found");
-            throw new EntityNotFoundException("User (id=" + collaboratorId + ") was not found");
+            log.error("ToDoServiceImpl#getUserByIdAndCheckIsItOwnerOfToDo: User (id=%d) was not found".formatted(collaboratorId));
+            throw new EntityNotFoundException("User (id=%d) was not found".formatted(collaboratorId));
         });
         if (toDo.getOwner().equals(user)) {
             log.error("ToDoServiceImpl#getUserByIdAndCheckIsItOwnerOfToDo: This user is already an owner and cannot be added as collaborator");

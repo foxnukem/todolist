@@ -10,7 +10,8 @@
 <div class="col-md-offset-2 col-sm-6">
     <h2>Update Task</h2>
 
-    <form class="form-horizontal" th:object="${task}" method="post">
+    <form class="form-horizontal" th:object="${task}" th:href="@{|/tasks/${task.id}/update|}"
+          method="post">
         <div class="form-group">
             <label class="control-label" for="id">Id:</label>
             <input class="form-control" type="text" th:field="*{id}" id="id" th:value="*{id}" disabled/>
@@ -18,6 +19,13 @@
         <div class="form-group">
             <label class="control-label" for="name">Name:</label>
             <input class="form-control" type="text" th:field="*{name}" th:value="*{name}" id="name"/>
+            <small class="form-text text-muted" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></small>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="description">Description:</label>
+            <textarea class="form-control" th:field="*{description}" id="description"></textarea>
+            <small class="form-text text-muted" th:if="${#fields.hasErrors('description')}"
+                   th:errors="*{description}"></small>
         </div>
         <div class="form-group">
             <label class="control-label" for="priority">Priority:</label>
@@ -33,11 +41,11 @@
         </div>
         <div class="form-group">
             <label class="control-label" for="state">Status:</label>
-            <select class="form-control" name="stateId" id="state">
+            <select class="form-control" name="state" id="state">
                         <span th:each="state : ${states}">
-                            <option th:if="${state.id == task.stateId}" th:value="${state.id}" th:selected="${true}"
+                            <option th:if="${state.equals(task.state)}" th:value="${state.name}" th:selected="${true}"
                                     th:text="${state.name}"/>
-                            <option th:unless="${state.id == task.stateId}" th:value="${state.id}"
+                            <option th:unless="${state.equals(task.state)}" th:value="${state.name}"
                                     th:text="${state.name}"/>
                         </span>
             </select>
@@ -47,10 +55,10 @@
 
 
         <input type="hidden" name="id" th:value="*{id}">
-        <input type="hidden" name="todoId" th:value="${task.todoId}">
+        <input type="hidden" name="toDoId" th:value="${toDoId}">
     </form>
     <div>
-        <a th:href="@{|/todos/${task.todoId}/tasks|}">Go to Task List</a>
+        <a th:href="@{|/todos/${toDoId}/tasks|}">Go to Task List</a>
     </div>
 </div>
 </body>

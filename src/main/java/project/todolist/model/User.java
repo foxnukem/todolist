@@ -38,17 +38,11 @@ public class User {
     @Size(min = 5, max = 255, message = "Email must be between 5 and 255 characters")
     private String email;
 
-    @Pattern(regexp = "(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{6,}",
-            message = "Must be minimum 6 characters, at least one letter and one number")
     @Column(name = "password", nullable = false)
     @Size(min = 6, max = 255, message = "Password must be between 6 and 255 characters")
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "sex", nullable = false)
-    private Sex sex;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
 

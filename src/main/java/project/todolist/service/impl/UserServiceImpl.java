@@ -2,8 +2,7 @@ package project.todolist.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import project.todolist.exception.NullReferenceEntityException;
 import project.todolist.model.Role;
@@ -15,14 +14,15 @@ import project.todolist.service.UserService;
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
-import static org.springframework.security.core.userdetails.User.withUsername;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    private static final String USER_NOT_FOUND = "User (id=%d) was not found";
 
     @Override
     public User create(User user) {
@@ -30,6 +30,7 @@ public class UserServiceImpl implements UserService {
             log.error("UserServiceImpl#create: Given User cannot be saved (user=null)");
             throw new NullReferenceEntityException("Given User cannot be null");
         }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
@@ -41,8 +42,8 @@ public class UserServiceImpl implements UserService {
         }
         var oldUser = userRepository.findById(user.getId());
         if (oldUser.isEmpty()) {
-            log.error("UserServiceImpl#update: User (id=" + user.getId() + ") was not found");
-            throw new EntityNotFoundException("User (id=" + user.getId() + ") was not found");
+            log.error("UserServiceImpl#update: " + USER_NOT_FOUND.formatted(user.getId()));
+            throw new EntityNotFoundException(USER_NOT_FOUND.formatted(user.getId()));
         }
         return userRepository.save(user);
 
@@ -51,8 +52,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public User readById(long id) {
         return userRepository.findById(id).orElseThrow(() -> {
-            log.error("UserServiceImpl#readById: User (id=" + id + ") was not found");
-            throw new EntityNotFoundException("User (id=" + id + ") was not found");
+            log.error("UserServiceImpl#readById: " + USER_NOT_FOUND.formatted(id));
+            throw new EntityNotFoundException(USER_NOT_FOUND.formatted(id));
         });
     }
 
@@ -65,8 +66,8 @@ public class UserServiceImpl implements UserService {
                             userRepository.delete(u);
                         },
                         () -> {
-                            log.error("UserServiceImpl#delete: User (id=" + id + ") was not found");
-                            throw new EntityNotFoundException("User (id=" + id + ") was not found");
+                            log.error("UserServiceImpl#delete: " + USER_NOT_FOUND.formatted(id));
+                            throw new EntityNotFoundException(USER_NOT_FOUND.formatted(id));
                         });
 
     }
@@ -91,17 +92,5 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<Role> getAllRoles() {
         return roleRepository.findAll();
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User userByEmail = userRepository.findUserByEmail(username).orElseThrow(() -> {
-            log.error("UserServiceImpl#loadUserByUsername: User with username=" + username + " was not found");
-            throw new UsernameNotFoundException("User with username=" + username + " was not found");
-        });
-        org.springframework.security.core.userdetails.User.UserBuilder userBuilder = withUsername(userByEmail.getEmail());
-        userBuilder.password(userByEmail.getPassword());
-        userBuilder.roles(userByEmail.getRole().getName());
-        return userBuilder.build();
     }
 }

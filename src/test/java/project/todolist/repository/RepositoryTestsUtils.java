@@ -3,7 +3,6 @@ package project.todolist.repository;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import project.todolist.model.Sex;
 import project.todolist.model.User;
 
 import javax.persistence.EntityNotFoundException;
@@ -19,7 +18,6 @@ class RepositoryTestsUtils {
         user.setFirstName("First");
         user.setLastName("Last");
         user.setPassword("pAssw0rd");
-        user.setSex(Sex.MALE);
         roleRepository.findById(1L).ifPresentOrElse(user::setRole, () -> {
             throw new EntityNotFoundException("Table roles is empty. Impossible to create User entity");
         });
